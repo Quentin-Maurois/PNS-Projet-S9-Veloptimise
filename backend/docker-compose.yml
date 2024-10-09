@@ -1,0 +1,28 @@
+# version: '3'
+services:
+  influxdb:
+    image: veloptimise:influxdb
+    build:
+      context: ./influx-db
+      dockerfile: ./Dockerfile
+    expose:
+      - 8086  # Exposé au réseau docker uniquement
+
+  node-red:
+    image: veloptimise:node-red
+    build:
+      context: ./node-red
+      dockerfile: ./Dockerfile
+    user: node-red
+    volumes:
+      - ./node-red/data:/data   # Monter le dossier node-red/data sur le container
+    ports:
+      - 10001:1880
+
+  grafana:
+    image: veloptimise:grafana
+    build:
+      context: ./grafana
+      dockerfile: ./Dockerfile
+    ports:
+      - 10002:3000
