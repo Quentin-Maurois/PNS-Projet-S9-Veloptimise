@@ -7,7 +7,7 @@ services:
       context: ./influx-db
       dockerfile: ./Dockerfile
     volumes:
-      - ./influx-db/data:/var/lib/influxdb
+      - ./influx-db/data:/home/influxdb/.influxdbv2
       - ./influx-db/influxdb.conf:/etc/influxdb/influxdb.conf
     # expose:
     #   - 8086  # Exposé au réseau docker uniquement
