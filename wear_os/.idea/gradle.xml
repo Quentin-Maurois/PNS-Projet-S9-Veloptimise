@@ -14,6 +14,17 @@
         </option>
         <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+        <option name="modules">
+          <set>
+            <option value="$USER_HOME$/Documents/polytech/S9/wearable_computers/PNS-Projet-S9-Veloptimise/wear_os" />
+            <option value="$USER_HOME$/Documents/polytech/S9/wearable_computers/PNS-Projet-S9-Veloptimise/wear_os/app" />
+          </set>
+        </option>
+        <option name="resolveExternalAnnotations" value="false" />
+      </GradleProjectSettings>
     </option>
   </component>
 </project>
