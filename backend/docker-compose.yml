@@ -1,12 +1,18 @@
 # version: '3'
 services:
+
   influxdb:
     image: veloptimise:influxdb
     build:
       context: ./influx-db
       dockerfile: ./Dockerfile
-    expose:
-      - 8086  # Exposé au réseau docker uniquement
+    volumes:
+      - ./influx-db/data:/var/lib/influxdb
+      - ./influx-db/influxdb.conf:/etc/influxdb/influxdb.conf
+    # expose:
+    #   - 8086  # Exposé au réseau docker uniquement
+    ports:
+      - 10003:8086 # Pour debug et setup initial
 
   node-red:
     image: veloptimise:node-red
