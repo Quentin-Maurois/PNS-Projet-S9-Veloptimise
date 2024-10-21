@@ -1,17 +1,14 @@
 # Dockerfile.grafana
 FROM grafana/grafana:11.2.2
 
-# Créer un utilisateur et un groupe non-root
-# RUN addgroup -S grafanagroup && adduser -S grafanauser -G grafanagroup
-
 # Copier le fichier de configuration dans le conteneur
-COPY ./grafana.ini /etc/grafana/grafana.ini
+# COPY ./grafana.ini /etc/grafana/grafana.ini
 
-# Assurer que l'utilisateur non-root a les droits sur le fichier
-# RUN chown grafanauser:grafanagroup /etc/grafana/grafana.ini
+# S'assurer que le dossier de sauvegarde appartient à l'utilisateur grafana
+# RUN chown -R grafana:users /var/lib/grafana
 
 # Utiliser l'utilisateur non-root
-# USER grafanauser
+USER grafana
 
 # Démarrer Grafana
 CMD ["/run.sh"]
