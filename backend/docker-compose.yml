@@ -13,6 +13,8 @@ services:
     #   - 8086  # Exposé au réseau docker uniquement
     ports:
       - 10003:8086 # Pour debug et setup initial
+    networks:
+      - veloptimise_network
 
   node-red:
     image: veloptimise:node-red
@@ -24,6 +26,8 @@ services:
       - ./node-red/data:/data   # Monter le dossier node-red/data sur le container
     ports:
       - 10001:1880
+    networks:
+      - veloptimise_network
 
   grafana:
     image: veloptimise:grafana
@@ -35,4 +39,8 @@ services:
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
     ports:
       - 10002:3000
+    networks:
+      - veloptimise_network
     
+networks:
+  veloptimise_network:

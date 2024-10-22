@@ -534,6 +534,26 @@
      "file": "/usr/src/node-red/node_modules/node-red-node-twitter/27-twitter.js"
     }
    }
+  },
+  "node-red-contrib-influxdb": {
+   "name": "node-red-contrib-influxdb",
+   "version": "0.7.0",
+   "local": false,
+   "nodes": {
+    "influxdb": {
+     "name": "influxdb",
+     "types": [
+      "influxdb",
+      "influxdb out",
+      "influxdb batch",
+      "influxdb in"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-contrib-influxdb",
+     "file": "/data/node_modules/node-red-contrib-influxdb/influxdb.js"
+    }
+   }
   }
  },
  "_credentialSecret": "72bd50cd3794b6b5e0594edd5b676478f15989765e5dff3fae60ffb6a633f9c3",
