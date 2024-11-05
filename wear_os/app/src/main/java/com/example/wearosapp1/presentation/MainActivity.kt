@@ -19,9 +19,11 @@ import android.os.Bundle
 import android.os.ParcelUuid
 import android.util.Log
 import android.widget.TextView
+import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.wearosapp1.R
+import java.nio.ByteBuffer
 import java.util.*
 
 class MainActivity : Activity(), SensorEventListener {
@@ -35,6 +37,8 @@ class MainActivity : Activity(), SensorEventListener {
     private var bluetoothLeAdvertiser: BluetoothLeAdvertiser? = null
     private val PERMISSION_REQUEST_CODE = 1001
 
+    private val connectedDevices = mutableListOf<BluetoothDevice>()
+
     companion object {
         val HEART_RATE_SERVICE_UUID: UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb")
         val HEART_RATE_MEASUREMENT_UUID: UUID = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb")
@@ -45,6 +49,8 @@ class MainActivity : Activity(), SensorEventListener {
         setContentView(R.layout.activity_main)
 
         heartRateTextView = findViewById(R.id.heart_rate_value)
+
+        // init sensor manager
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         heartRateSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)
@@ -53,6 +59,19 @@ class MainActivity : Activity(), SensorEventListener {
             initializeBluetoothComponents()
         } else {
             requestBluetoothPermissions()
+        }
+
+        // Check and request permissions for BODY_SENSORS
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.BODY_SENSORS),
+                1
+            )
+        } else {
+            startHeartRateService()
         }
 
         // Start a foreground service to keep the app running in the background
@@ -78,6 +97,13 @@ class MainActivity : Activity(), SensorEventListener {
             ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
         }
     }
+
+    // Start the background service to listen for heart rate data
+    private fun startHeartRateService() {
+        val serviceIntent = Intent(this, HeartRateService::class.java)
+        startForegroundService(serviceIntent)
+    }
+
 
     private fun requestBluetoothPermissions() {
         val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -149,7 +175,16 @@ class MainActivity : Activity(), SensorEventListener {
     }
 
     private val gattServerCallback = object : BluetoothGattServerCallback() {
-        // Callback methods to handle GATT server events
+        override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
+            super.onConnectionStateChange(device, status, newState)
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                connectedDevices.add(device)
+                Log.d("GATT", "Device connected: ${device.address}")
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                connectedDevices.remove(device)
+                Log.d("GATT", "Device disconnected: ${device.address}")
+            }
+        }
     }
 
     override fun onResume() {
@@ -167,21 +202,41 @@ class MainActivity : Activity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_HEART_RATE) {
             val heartRate = event.values[0].toInt()
-            heartRateTextView.text = "Heart Rate: $heartRate bpm"
-            updateHeartRateCharacteristic(heartRate)
+            //update the UI
+            heartRateTextView.text = "Heart Rate : " + heartRate.toString() + " bpm"
+            Log.d("HeartRateService", "Heart Rate Sensor Update: $heartRate bpm")
+
+            // Update the Bluetooth characteristic only if there are connected devices
+            if (connectedDevices.isNotEmpty()) {
+                updateHeartRateCharacteristic(heartRate)
+            }
         }
     }
+
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         // Handle accuracy changes if needed
     }
 
-    private fun updateHeartRateCharacteristic(heartRate: Int) {
-        heartRateCharacteristic?.value = byteArrayOf(heartRate.toByte())
-        bluetoothGattServer?.notifyCharacteristicChanged(
-            null, // Send to all connected devices
-            heartRateCharacteristic,
-            false
-        )
+//    private fun updateHeartRateCharacteristic(heartRate: Int) {
+//        heartRateCharacteristic?.value = heartRate.toString().toByteArray()
+//
+//        for (device in connectedDevices) {
+//            bluetoothGattServer?.notifyCharacteristicChanged(device, heartRateCharacteristic, false)
+//            Log.d("GATT", "Notifying device ${device.address} with heart rate: $heartRate")
+//        }
+//    }
+private fun updateHeartRateCharacteristic(heartRate: Int) {
+    // Create a ByteBuffer to hold the integer value
+    val buffer = ByteBuffer.allocate(4) // 4 bytes for an integer
+    buffer.putInt(heartRate) // Put the heart rate as an integer into the buffer
+
+    heartRateCharacteristic?.value = buffer.array() // Set the characteristic value to the byte array
+
+    for (device in connectedDevices) {
+        bluetoothGattServer?.notifyCharacteristicChanged(device, heartRateCharacteristic, false)
+        Log.d("GATT", "Notifying device ${device.address} with heart rate: $heartRate")
     }
+}
+
 }
