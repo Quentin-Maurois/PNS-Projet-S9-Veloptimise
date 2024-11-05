@@ -538,7 +538,7 @@
   "node-red-contrib-influxdb": {
    "name": "node-red-contrib-influxdb",
    "version": "0.7.0",
-   "local": false,
+   "local": true,
    "nodes": {
     "influxdb": {
      "name": "influxdb",
